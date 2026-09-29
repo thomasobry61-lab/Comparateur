@@ -14,8 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Lister les fichiers du dépôt (Debug)
+        run: ls -la
+
       - name: Décompresser le projet
         run: unzip -q comparateur-android.zip
+
+      - name: Lister le contenu après décompression (Debug)
+        run: ls -R
 
       - uses: actions/setup-java@v4
         with:
@@ -24,23 +30,24 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Rendre gradlew exécutable dynamiquement
-        run: |
-          GRADLEW_PATH=$(find . -name "gradlew" -type f)
-          echo "Fichier gradlew trouvé à : $GRADLEW_PATH"
-          chmod +x "$GRADLEW_PATH"
-
-      - name: Compiler l'APK
+      - name: Compiler l'APK intelligemment
         env:
           API_URL: ${{ inputs.api_url }}
         run: |
-          GRADLEW_PATH=$(find . -name "gradlew" -type f)
-          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
-          echo "Dossier du projet : $PROJECT_DIR"
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug --no-daemon ${API_URL:+-PapiUrl="$API_URL"}
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug --no-daemon ${API_URL:+-PapiUrl="$API_URL"}
+          elif [ -f "comparateur-android/gradlew" ]; then
+            chmod +x comparateur-android/gradlew
+            cd comparateur-android
+            ./gradlew assembleDebug --no-daemon ${API_URL:+-PapiUrl="$API_URL"}
+          else
+            echo "Aucun gradlew trouvé, utilisation de gradle global..."
+            gradle assembleDebug --no-daemon ${API_URL:+-PapiUrl="$API_URL"}
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
           name: comparateur-apk
           path: '**/app/build/outputs/apk/debug/app-debug.apk'
+          
