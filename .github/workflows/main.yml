@@ -23,6 +23,8 @@ jobs:
           java-version: 17
 
       - uses: android-actions/setup-android@v3
+        with:
+          accept-licenses: true
 
       - uses: gradle/actions/setup-gradle@v4
 
