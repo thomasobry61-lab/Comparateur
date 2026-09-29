@@ -24,15 +24,23 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Rendre gradlew exécutable
-        run: chmod +x gradlew
+      - name: Rendre gradlew exécutable dynamiquement
+        run: |
+          GRADLEW_PATH=$(find . -name "gradlew" -type f)
+          echo "Fichier gradlew trouvé à : $GRADLEW_PATH"
+          chmod +x "$GRADLEW_PATH"
 
       - name: Compiler l'APK
         env:
           API_URL: ${{ inputs.api_url }}
-        run: ./gradlew assembleDebug --no-daemon ${API_URL:+-PapiUrl="$API_URL"}
+        run: |
+          GRADLEW_PATH=$(find . -name "gradlew" -type f)
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Dossier du projet : $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug --no-daemon ${API_URL:+-PapiUrl="$API_URL"}
 
       - uses: actions/upload-artifact@v4
         with:
           name: comparateur-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: '**/app/build/outputs/apk/debug/app-debug.apk'
