@@ -22,10 +22,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: true
-
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Rendre gradlew exécutable
@@ -41,4 +37,3 @@ jobs:
         with:
           name: comparateur-apk
           path: comparateur-android/app/build/outputs/apk/debug/app-debug.apk
-          
